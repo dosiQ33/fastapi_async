@@ -1,15 +1,14 @@
-import redis as redis
-from jose import JWTError, jwt
-from fastapi import status, Depends, HTTPException
-from typing_extensions import Annotated
-from fastapi.security import OAuth2PasswordBearer
 from datetime import datetime
+
+from fastapi import status, Depends, HTTPException
+from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
 from sqlalchemy import select
 
-from src.database import async_session, get_async_session, AsyncSession
+from src.database import get_async_session, AsyncSession
 from src.users import models
+from .schemas import TokenData
 from .utils import JWT_SECRET_KEY, ALGORITHM
-from .schemas import TokenPayload, TokenData
 
 reusable_oauth = OAuth2PasswordBearer(
     tokenUrl="login",
@@ -23,7 +22,7 @@ async def get_user(db: AsyncSession, username: str):
     return user
 
 
-async def get_current_user(token=Annotated[str, Depends(reusable_oauth)],
+async def get_current_user(token: str = Depends(reusable_oauth),
                            session: AsyncSession = Depends(get_async_session)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -44,5 +43,3 @@ async def get_current_user(token=Annotated[str, Depends(reusable_oauth)],
     except JWTError:
         raise credentials_exception
     return token_data
-
-
