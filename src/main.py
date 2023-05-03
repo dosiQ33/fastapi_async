@@ -1,11 +1,13 @@
 from fastapi import FastAPI, HTTPException, Depends
 
-from .models import Book
-from .database import async_session
-from .schemas import BookSchema, BookCreate, BookUpdate
+from src.models import Book
+from src.database import async_session
+from src.schemas import BookSchema, BookCreate, BookUpdate
 from src.users import user
 from src.auth import authentication, schemas
 from src.auth.dependencies import get_current_user
+import uvicorn
+
 app = FastAPI()
 
 app.include_router(user.router)
@@ -59,3 +61,7 @@ async def delete_book(book_id: int):
         session.delete(db_book)
         await session.commit()
         return db_book
+
+
+if __name__ == '__main__':
+    uvicorn.run(app)
